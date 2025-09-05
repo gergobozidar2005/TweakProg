@@ -1,95 +1,147 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Admin Panel</title>
+    <title>@ViewData["Title"] - TweakProg Admin</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body class="admin-body">
-
-    <header class="navbar navbar-dark sticky-top admin-header flex-md-nowrap p-0 shadow">
-        <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="@Url.Action("Index", "Admin")">TweakManager</a>
-        <button class="sidebar-toggler d-md-none" type="button" id="sidebarToggle">
-            <span data-feather="menu"></span>
-        </button>
-        <div class="navbar-nav">
-            <div class="nav-item text-nowrap">
-                <partial name="_LoginPartial" />
+    <!-- Top Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top admin-navbar">
+        <div class="container-fluid">
+            <button class="btn btn-link text-white me-3" id="sidebarToggle" type="button">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a class="navbar-brand fw-bold" href="@Url.Action("Index", "Admin")">
+                <i class="fas fa-cogs me-2"></i>TweakProg Admin
+            </a>
+            
+            <div class="navbar-nav ms-auto">
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-user-circle me-1"></i>
+                        <span id="userName">Admin</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/Identity/Account/Logout"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
-    </header>
+    </nav>
 
-    <div class="container-fluid">
-        <div class="row">
-            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-white sidebar">
-                <div class="position-sticky pt-3">
-                    <ul class="nav flex-column px-2">
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewData["ActivePage"] as string == "Dashboard" ? "active" : "")" asp-action="Index">
-                                <span data-feather="home"></span> Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewData["ActivePage"] as string == "Keys" ? "active" : "")" asp-action="Keys">
-                                <span data-feather="key"></span> License Keys
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewData["ActivePage"] as string == "UserManagement" ? "active" : "")" asp-action="UserManagement">
-                                <span data-feather="users"></span> User Management
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewData["ActivePage"] as string == "Logs" ? "active" : "")" asp-action="Logs">
-                                <span data-feather="file-text"></span> Logs
-                            </a>
-                        </li>
-                    </ul>
-
-                    @if (ViewData["ActivePage"] as string != "Dashboard")
-                    {
-                        <div class="sidebar-footer">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index">
-                                <span data-feather="arrow-left-circle"></span> Back to Main Site
-                            </a>
-                        </div>
-                    }
-                </div>
-            </nav>
-
-            <main id="mainContent" class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-                @RenderBody()
-            </main>
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-brand">
+                <i class="fas fa-shield-alt me-2"></i>
+                <span>Admin Panel</span>
+            </div>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link @(ViewData["ActivePage"] as string == "Dashboard" ? "active" : "")" asp-action="Index">
+                        <i class="fas fa-tachometer-alt me-3"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(ViewData["ActivePage"] as string == "Keys" ? "active" : "")" asp-action="Keys">
+                        <i class="fas fa-key me-3"></i>
+                        <span>License Keys</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(ViewData["ActivePage"] as string == "UserManagement" ? "active" : "")" asp-action="UserManagement">
+                        <i class="fas fa-users me-3"></i>
+                        <span>Users</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @(ViewData["ActivePage"] as string == "Logs" ? "active" : "")" asp-action="Logs">
+                        <i class="fas fa-file-alt me-3"></i>
+                        <span>Activity Logs</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" data-bs-toggle="collapse" data-bs-target="#systemSubmenu">
+                        <i class="fas fa-cog me-3"></i>
+                        <span>System</span>
+                        <i class="fas fa-chevron-down ms-auto"></i>
+                    </a>
+                    <div class="collapse" id="systemSubmenu">
+                        <ul class="nav flex-column ms-3">
+                            <li class="nav-item">
+                                <a class="nav-link" href="#"><i class="fas fa-database me-2"></i>Database</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#"><i class="fas fa-server me-2"></i>Server Status</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#"><i class="fas fa-chart-line me-2"></i>Analytics</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="nav-item">
+                <a class="nav-link" asp-controller="Home" asp-action="Index">
+                    <i class="fas fa-arrow-left me-3"></i>
+                    <span>Back to Site</span>
+                </a>
+            </div>
         </div>
     </div>
 
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <div class="container-fluid">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="breadcrumb-nav">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Index", "Admin")">Admin</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">@ViewData["Title"]</li>
+                </ol>
+            </nav>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                @RenderBody()
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/admin.js" asp-append-version="true"></script>
+    
     <script>
-        // Ikonok cseréje
-        feather.replace();
-
-        // Oldalsó menü nyitása/csukása
-        document.addEventListener('DOMContentLoaded', function () {
-            var sidebar = document.getElementById('sidebarMenu');
-            var mainContent = document.getElementById('mainContent');
-            var toggler = document.getElementById('sidebarToggle');
-
-            if (toggler) {
-                toggler.addEventListener('click', function() {
-                    sidebar.classList.toggle('collapsed');
-                });
-            }
-
-            // Kezdeti állapot beállítása képernyőméret alapján
-            if (window.innerWidth < 768) {
-                sidebar.classList.add('collapsed');
-            }
+        // Initialize admin panel
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAdminPanel();
         });
     </script>
+    
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

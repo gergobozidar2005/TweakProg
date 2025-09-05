@@ -1,4 +1,4 @@
-﻿using System.Net.Http;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
@@ -6,9 +6,6 @@ namespace TweakAppClient
 {
     public static class Logger
     {
-        // IMPORTANT: Make sure this port number matches your backend's port!
-        // Your backend is currently running on port 5062.
-        private const string ApiBaseUrl = "http://localhost:5062";
         private static readonly HttpClient _httpClient = new HttpClient();
         private static string? _currentUser = null;
 
@@ -42,7 +39,7 @@ namespace TweakAppClient
             try
             {
                 // This sends the log data to your backend's logging controller.
-                await _httpClient.PostAsJsonAsync($"{ApiBaseUrl}/api/logging/log", logData);
+                await _httpClient.PostAsJsonAsync($"{Configuration.ApiBaseUrl}/api/logging/log", logData);
             }
             catch
             {
