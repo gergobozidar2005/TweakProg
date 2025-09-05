@@ -1,36 +1,295 @@
-﻿@{
+@{
     ViewData["Title"] = "Generate New Key";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">@ViewData["Title"]</h1>
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">Generate New License Key</h1>
+            <p class="page-subtitle">Create a new license key for a user</p>
+        </div>
+        <div class="page-actions">
+            <a asp-action="Keys" class="btn btn-modern btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Back to Keys
+            </a>
+        </div>
+    </div>
 </div>
 
 <div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                Key Details
+    <div class="col-lg-8">
+        <div class="modern-card">
+            <div class="card-header bg-transparent border-0 pb-0">
+                <h5 class="mb-0">Key Generation Form</h5>
             </div>
             <div class="card-body">
-                <form asp-action="GenerateKey" method="post">
+                <form asp-action="GenerateKey" method="post" id="generateKeyForm">
                     @if (TempData["ErrorMessage"] != null)
                     {
-                        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+                        <div class="alert-modern alert-danger-modern">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            @TempData["ErrorMessage"]
+                        </div>
                     }
-                    <div class="mb-3">
-                        <label for="assignedToUsername" class="form-label">Assign to Username</label>
-                        <input type="text" name="assignedToUsername" class="form-control" />
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="assignedToUsername" class="form-label">
+                                <i class="fas fa-user me-1"></i>
+                                Assign to Username
+                            </label>
+                            <input type="text" 
+                                   name="assignedToUsername" 
+                                   class="form-control" 
+                                   id="assignedToUsername"
+                                   placeholder="Enter username or email"
+                                   required>
+                            <div class="form-text">The username or email of the user who will receive this key</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="assignedToHardwareId" class="form-label">
+                                <i class="fas fa-desktop me-1"></i>
+                                Hardware ID
+                            </label>
+                            <input type="text" 
+                                   name="assignedToHardwareId" 
+                                   class="form-control" 
+                                   id="assignedToHardwareId"
+                                   placeholder="Enter hardware ID"
+                                   required>
+                            <div class="form-text">The unique hardware identifier for this key</div>
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label for="assignedToHardwareId" class="form-label">Assign to Hardware ID</label>
-                        <input type="text" name="assignedToHardwareId" class="form-control" />
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="keyPrefix" class="form-label">
+                                <i class="fas fa-tag me-1"></i>
+                                Key Prefix
+                            </label>
+                            <select class="form-select" id="keyPrefix" name="keyPrefix">
+                                <option value="PabloDEV">PabloDEV</option>
+                                <option value="TweakPro">TweakPro</option>
+                                <option value="Custom">Custom</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="expiryDate" class="form-label">
+                                <i class="fas fa-calendar me-1"></i>
+                                Expiry Date (Optional)
+                            </label>
+                            <input type="date" 
+                                   class="form-control" 
+                                   id="expiryDate"
+                                   name="expiryDate">
+                            <div class="form-text">Leave empty for no expiration</div>
+                        </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Generate Key</button>
-                    <a asp-action="Keys" class="btn btn-secondary">Cancel</a>
+                    
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">
+                            <i class="fas fa-sticky-note me-1"></i>
+                            Notes (Optional)
+                        </label>
+                        <textarea class="form-control" 
+                                  id="notes" 
+                                  name="notes" 
+                                  rows="3"
+                                  placeholder="Add any notes about this key..."></textarea>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-modern btn-primary-modern">
+                            <i class="fas fa-key"></i>
+                            Generate Key
+                        </button>
+                        <button type="button" class="btn btn-modern btn-outline-secondary" onclick="previewKey()">
+                            <i class="fas fa-eye"></i>
+                            Preview Key
+                        </button>
+                        <a asp-action="Keys" class="btn btn-modern btn-outline-danger">
+                            <i class="fas fa-times"></i>
+                            Cancel
+                        </a>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
+    
+    <div class="col-lg-4">
+        <div class="modern-card">
+            <h5 class="mb-3">Key Generation Info</h5>
+            <div class="info-item mb-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-info-circle text-primary me-2"></i>
+                    <div>
+                        <div class="fw-bold">Auto-Generated</div>
+                        <small class="text-muted">Keys are automatically generated with unique identifiers</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-item mb-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-shield-alt text-success me-2"></i>
+                    <div>
+                        <div class="fw-bold">Secure</div>
+                        <small class="text-muted">Each key is cryptographically secure and unique</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-item mb-3">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-clock text-warning me-2"></i>
+                    <div>
+                        <div class="fw-bold">Instant Activation</div>
+                        <small class="text-muted">Keys are immediately available for use</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="modern-card mt-3">
+            <h5 class="mb-3">Recent Keys</h5>
+            <div class="recent-keys">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <code class="small">PabloDEV-ABC123...</code>
+                        <div class="text-muted small">john.doe@example.com</div>
+                    </div>
+                    <span class="badge bg-success">Active</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <code class="small">PabloDEV-DEF456...</code>
+                        <div class="text-muted small">jane.smith@example.com</div>
+                    </div>
+                    <span class="badge bg-success">Active</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <code class="small">PabloDEV-GHI789...</code>
+                        <div class="text-muted small">bob.wilson@example.com</div>
+                    </div>
+                    <span class="badge bg-warning">Inactive</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Key Preview Modal -->
+<div class="modal fade" id="keyPreviewModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Generated Key Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <div class="key-preview mb-3">
+                        <code class="fs-4" id="previewKeyValue">PabloDEV-ABC123-DEF456-GHI789</code>
+                    </div>
+                    <div class="key-details">
+                        <p><strong>Assigned to:</strong> <span id="previewUsername">-</span></p>
+                        <p><strong>Hardware ID:</strong> <span id="previewHardwareId">-</span></p>
+                        <p><strong>Generated:</strong> <span id="previewDate">-</span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="copyPreviewKey()">
+                    <i class="fas fa-copy"></i>
+                    Copy Key
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Form validation
+            const form = document.getElementById('generateKeyForm');
+            form.addEventListener('submit', function(e) {
+                const username = document.getElementById('assignedToUsername').value.trim();
+                const hardwareId = document.getElementById('assignedToHardwareId').value.trim();
+                
+                if (!username || !hardwareId) {
+                    e.preventDefault();
+                    showNotification('Please fill in all required fields', 'danger');
+                    return;
+                }
+                
+                // Show loading state
+                const submitBtn = form.querySelector('button[type="submit"]');
+                submitBtn.innerHTML = '<span class="spinner"></span> Generating...';
+                submitBtn.disabled = true;
+            });
+            
+            // Auto-generate hardware ID if empty
+            document.getElementById('assignedToHardwareId').addEventListener('blur', function() {
+                if (!this.value.trim()) {
+                    this.value = 'HW-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+                }
+            });
+            
+            // Username validation
+            document.getElementById('assignedToUsername').addEventListener('blur', function() {
+                const value = this.value.trim();
+                if (value && !value.includes('@') && !value.includes('.')) {
+                    this.value = value + '@example.com';
+                }
+            });
+        });
+        
+        function previewKey() {
+            const username = document.getElementById('assignedToUsername').value.trim();
+            const hardwareId = document.getElementById('assignedToHardwareId').value.trim();
+            const prefix = document.getElementById('keyPrefix').value;
+            
+            if (!username || !hardwareId) {
+                showNotification('Please fill in username and hardware ID first', 'warning');
+                return;
+            }
+            
+            // Generate preview key
+            const keyValue = prefix + '-' + generateRandomString(8) + '-' + generateRandomString(8) + '-' + generateRandomString(8);
+            
+            // Update modal content
+            document.getElementById('previewKeyValue').textContent = keyValue;
+            document.getElementById('previewUsername').textContent = username;
+            document.getElementById('previewHardwareId').textContent = hardwareId;
+            document.getElementById('previewDate').textContent = new Date().toLocaleString();
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('keyPreviewModal'));
+            modal.show();
+        }
+        
+        function generateRandomString(length) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+        
+        function copyPreviewKey() {
+            const keyValue = document.getElementById('previewKeyValue').textContent;
+            navigator.clipboard.writeText(keyValue).then(() => {
+                showNotification('Key copied to clipboard', 'success');
+            });
+        }
+    </script>
+}

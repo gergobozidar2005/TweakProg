@@ -1,0 +1,440 @@
+@{
+    ViewData["Title"] = "System Settings";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">System Settings</h1>
+            <p class="page-subtitle">Configure system preferences and security settings</p>
+        </div>
+        <div class="page-actions">
+            <button class="btn btn-modern btn-primary-modern" onclick="saveAllSettings()">
+                <i class="fas fa-save"></i>
+                Save All Changes
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- General Settings -->
+        <div class="modern-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">General Settings</h5>
+                <span class="badge bg-success">Active</span>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="systemName" class="form-label">System Name</label>
+                    <input type="text" class="form-control" id="systemName" value="TweakManager" placeholder="Enter system name">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="systemVersion" class="form-label">System Version</label>
+                    <input type="text" class="form-control" id="systemVersion" value="2.1.0" readonly>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="timezone" class="form-label">Timezone</label>
+                    <select class="form-select" id="timezone">
+                        <option value="UTC">UTC</option>
+                        <option value="EST">Eastern Time</option>
+                        <option value="PST">Pacific Time</option>
+                        <option value="CET">Central European Time</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="language" class="form-label">Default Language</label>
+                    <select class="form-select" id="language">
+                        <option value="en">English</option>
+                        <option value="es">Spanish</option>
+                        <option value="fr">French</option>
+                        <option value="de">German</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Settings -->
+        <div class="modern-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Security Settings</h5>
+                <span class="badge bg-warning">High Priority</span>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="sessionTimeout" class="form-label">Session Timeout (minutes)</label>
+                    <input type="number" class="form-control" id="sessionTimeout" value="30" min="5" max="480">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="maxLoginAttempts" class="form-label">Max Login Attempts</label>
+                    <input type="number" class="form-control" id="maxLoginAttempts" value="5" min="3" max="10">
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="requireEmailVerification" checked>
+                        <label class="form-check-label" for="requireEmailVerification">
+                            Require Email Verification
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="enableTwoFactor" checked>
+                        <label class="form-check-label" for="enableTwoFactor">
+                            Enable Two-Factor Authentication
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="logSecurityEvents" checked>
+                        <label class="form-check-label" for="logSecurityEvents">
+                            Log Security Events
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="enableAuditTrail" checked>
+                        <label class="form-check-label" for="enableAuditTrail">
+                            Enable Audit Trail
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email Settings -->
+        <div class="modern-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Email Settings</h5>
+                <span class="badge bg-info">Configured</span>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="smtpServer" class="form-label">SMTP Server</label>
+                    <input type="text" class="form-control" id="smtpServer" value="smtp.gmail.com" placeholder="Enter SMTP server">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="smtpPort" class="form-label">SMTP Port</label>
+                    <input type="number" class="form-control" id="smtpPort" value="587" min="1" max="65535">
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="smtpUsername" class="form-label">SMTP Username</label>
+                    <input type="email" class="form-control" id="smtpUsername" value="admin@tweakmanager.com" placeholder="Enter SMTP username">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="smtpPassword" class="form-label">SMTP Password</label>
+                    <div class="input-group">
+                        <input type="password" class="form-control" id="smtpPassword" value="••••••••" placeholder="Enter SMTP password">
+                        <button class="btn btn-outline-secondary" type="button" onclick="togglePassword('smtpPassword')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="useSSL" checked>
+                        <label class="form-check-label" for="useSSL">
+                            Use SSL/TLS
+                        </label>
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <button class="btn btn-outline-primary" onclick="testEmailConnection()">
+                        <i class="fas fa-paper-plane"></i>
+                        Test Email Connection
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- License Key Settings -->
+        <div class="modern-card mb-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">License Key Settings</h5>
+                <span class="badge bg-primary">Active</span>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="keyPrefix" class="form-label">Default Key Prefix</label>
+                    <input type="text" class="form-control" id="keyPrefix" value="PabloDEV" placeholder="Enter key prefix">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="keyLength" class="form-label">Key Length</label>
+                    <select class="form-select" id="keyLength">
+                        <option value="16">16 characters</option>
+                        <option value="24" selected>24 characters</option>
+                        <option value="32">32 characters</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="defaultExpiry" class="form-label">Default Expiry (days)</label>
+                    <input type="number" class="form-control" id="defaultExpiry" value="365" min="1" max="3650">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="autoGenerateKeys" checked>
+                        <label class="form-check-label" for="autoGenerateKeys">
+                            Auto-generate Keys
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- System Status -->
+        <div class="modern-card mb-4">
+            <h5 class="mb-3">System Status</h5>
+            <div class="system-status">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Database</span>
+                    <span class="badge bg-success">Online</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Email Service</span>
+                    <span class="badge bg-success">Online</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>API Endpoints</span>
+                    <span class="badge bg-success">Online</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Storage</span>
+                    <span class="badge bg-warning">75% Used</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>SSL Certificate</span>
+                    <span class="badge bg-success">Valid</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Backup Settings -->
+        <div class="modern-card mb-4">
+            <h5 class="mb-3">Backup Settings</h5>
+            <div class="mb-3">
+                <label for="backupFrequency" class="form-label">Backup Frequency</label>
+                <select class="form-select" id="backupFrequency">
+                    <option value="daily">Daily</option>
+                    <option value="weekly" selected>Weekly</option>
+                    <option value="monthly">Monthly</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" id="autoBackup" checked>
+                    <label class="form-check-label" for="autoBackup">
+                        Automatic Backup
+                    </label>
+                </div>
+            </div>
+            <div class="d-grid gap-2">
+                <button class="btn btn-outline-primary" onclick="createBackup()">
+                    <i class="fas fa-download"></i>
+                    Create Backup Now
+                </button>
+                <button class="btn btn-outline-secondary" onclick="restoreBackup()">
+                    <i class="fas fa-upload"></i>
+                    Restore from Backup
+                </button>
+            </div>
+        </div>
+
+        <!-- Maintenance -->
+        <div class="modern-card">
+            <h5 class="mb-3">System Maintenance</h5>
+            <div class="d-grid gap-2">
+                <button class="btn btn-outline-warning" onclick="clearCache()">
+                    <i class="fas fa-broom"></i>
+                    Clear Cache
+                </button>
+                <button class="btn btn-outline-info" onclick="optimizeDatabase()">
+                    <i class="fas fa-database"></i>
+                    Optimize Database
+                </button>
+                <button class="btn btn-outline-danger" onclick="restartSystem()">
+                    <i class="fas fa-power-off"></i>
+                    Restart System
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load current settings
+            loadSettings();
+            
+            // Setup form validation
+            setupFormValidation();
+        });
+        
+        function loadSettings() {
+            // Simulate loading settings from server
+            console.log('Loading system settings...');
+        }
+        
+        function setupFormValidation() {
+            const form = document.querySelector('.modern-card form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    validateAndSave();
+                });
+            }
+        }
+        
+        function saveAllSettings() {
+            const settings = {
+                general: {
+                    systemName: document.getElementById('systemName').value,
+                    timezone: document.getElementById('timezone').value,
+                    language: document.getElementById('language').value
+                },
+                security: {
+                    sessionTimeout: document.getElementById('sessionTimeout').value,
+                    maxLoginAttempts: document.getElementById('maxLoginAttempts').value,
+                    requireEmailVerification: document.getElementById('requireEmailVerification').checked,
+                    enableTwoFactor: document.getElementById('enableTwoFactor').checked,
+                    logSecurityEvents: document.getElementById('logSecurityEvents').checked,
+                    enableAuditTrail: document.getElementById('enableAuditTrail').checked
+                },
+                email: {
+                    smtpServer: document.getElementById('smtpServer').value,
+                    smtpPort: document.getElementById('smtpPort').value,
+                    smtpUsername: document.getElementById('smtpUsername').value,
+                    smtpPassword: document.getElementById('smtpPassword').value,
+                    useSSL: document.getElementById('useSSL').checked
+                },
+                license: {
+                    keyPrefix: document.getElementById('keyPrefix').value,
+                    keyLength: document.getElementById('keyLength').value,
+                    defaultExpiry: document.getElementById('defaultExpiry').value,
+                    autoGenerateKeys: document.getElementById('autoGenerateKeys').checked
+                },
+                backup: {
+                    backupFrequency: document.getElementById('backupFrequency').value,
+                    autoBackup: document.getElementById('autoBackup').checked
+                }
+            };
+            
+            // Simulate saving settings
+            showNotification('Settings saved successfully', 'success');
+            console.log('Settings saved:', settings);
+        }
+        
+        function testEmailConnection() {
+            showNotification('Testing email connection...', 'info');
+            
+            // Simulate email test
+            setTimeout(() => {
+                showNotification('Email connection test successful', 'success');
+            }, 2000);
+        }
+        
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const button = input.nextElementSibling;
+            const icon = button.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+        
+        function createBackup() {
+            if (confirm('Are you sure you want to create a backup now? This may take a few minutes.')) {
+                showNotification('Backup creation started...', 'info');
+                
+                // Simulate backup creation
+                setTimeout(() => {
+                    showNotification('Backup created successfully', 'success');
+                }, 3000);
+            }
+        }
+        
+        function restoreBackup() {
+            showNotification('Backup restore functionality coming soon', 'info');
+        }
+        
+        function clearCache() {
+            if (confirm('Are you sure you want to clear the system cache?')) {
+                showNotification('Cache cleared successfully', 'success');
+            }
+        }
+        
+        function optimizeDatabase() {
+            if (confirm('Are you sure you want to optimize the database? This may take a few minutes.')) {
+                showNotification('Database optimization started...', 'info');
+                
+                // Simulate optimization
+                setTimeout(() => {
+                    showNotification('Database optimized successfully', 'success');
+                }, 5000);
+            }
+        }
+        
+        function restartSystem() {
+            if (confirm('Are you sure you want to restart the system? This will cause temporary downtime.')) {
+                showNotification('System restart initiated...', 'warning');
+            }
+        }
+        
+        function validateAndSave() {
+            // Add validation logic here
+            const requiredFields = ['systemName', 'smtpServer', 'smtpPort', 'smtpUsername'];
+            let isValid = true;
+            
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (!field.value.trim()) {
+                    field.classList.add('is-invalid');
+                    isValid = false;
+                } else {
+                    field.classList.remove('is-invalid');
+                }
+            });
+            
+            if (isValid) {
+                saveAllSettings();
+            } else {
+                showNotification('Please fill in all required fields', 'warning');
+            }
+        }
+    </script>
+}

@@ -1,34 +1,165 @@
-﻿@{
+@{
     ViewData["Title"] = "Confirm Admin Promotion";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">@ViewData["Title"]</h1>
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">Confirm Admin Promotion</h1>
+            <p class="page-subtitle">Enter the PIN code to complete the admin promotion</p>
+        </div>
+        <div class="page-actions">
+            <a asp-action="UserManagement" class="btn btn-modern btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i>
+                Back to Users
+            </a>
+        </div>
+    </div>
 </div>
 
-@if (TempData["InfoMessage"] != null)
+@if (TempData["ErrorMessage"] != null)
 {
-    <div class="alert alert-info">@TempData["InfoMessage"]</div>
+    <div class="alert-modern alert-danger-modern">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        @TempData["ErrorMessage"]
+    </div>
 }
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                Enter PIN
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="modern-card">
+            <div class="text-center mb-4">
+                <div class="bg-warning bg-gradient rounded-circle p-4 d-inline-block mb-3">
+                    <i class="fas fa-shield-alt text-white fa-2x"></i>
+                </div>
+                <h4>Admin Promotion Confirmation</h4>
+                <p class="text-muted">A PIN code has been sent to the user's email address. Please ask them to provide the code to complete the promotion.</p>
             </div>
-            <div class="card-body">
-                <p>Please enter the 6-digit PIN sent to the user's email to confirm this action.</p>
-                <form asp-action="ConfirmAdminPromotion" method="post">
-                    <div class="mb-3">
-                        <label for="pin" class="form-label">Confirmation PIN</label>
-                        <input name="pin" class="form-control" maxlength="6" autofocus />
+            
+            <form asp-action="ConfirmAdminPromotion" method="post" id="confirmForm">
+                <div class="mb-4">
+                    <label for="pin" class="form-label">
+                        <i class="fas fa-key me-1"></i>
+                        Confirmation PIN
+                    </label>
+                    <input type="text" 
+                           name="pin" 
+                           class="form-control form-control-lg text-center" 
+                           id="pin"
+                           placeholder="Enter 6-digit PIN"
+                           maxlength="6"
+                           pattern="[0-9]{6}"
+                           required>
+                    <div class="form-text">Enter the 6-digit PIN code sent to the user's email</div>
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-modern btn-primary-modern btn-lg">
+                        <i class="fas fa-check"></i>
+                        Confirm Promotion
+                    </button>
+                    <a asp-action="UserManagement" class="btn btn-modern btn-outline-danger">
+                        <i class="fas fa-times"></i>
+                        Cancel Promotion
+                    </a>
+                </div>
+            </form>
+        </div>
+        
+        <div class="modern-card mt-3">
+            <h6 class="mb-3">Security Information</h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-envelope text-primary me-2"></i>
+                        <div>
+                            <div class="fw-bold small">Email Sent</div>
+                            <small class="text-muted">PIN delivered to user's email</small>
+                        </div>
                     </div>
-                    <button type="submit" class="btn btn-success">Confirm Promotion</button>
-                    <a asp-action="UserManagement" class="btn btn-secondary">Cancel</a>
-                </form>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-clock text-warning me-2"></i>
+                        <div>
+                            <div class="fw-bold small">Time Limit</div>
+                            <small class="text-muted">PIN expires in 15 minutes</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-shield-alt text-success me-2"></i>
+                        <div>
+                            <div class="fw-bold small">Secure Process</div>
+                            <small class="text-muted">Two-factor verification required</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-history text-info me-2"></i>
+                        <div>
+                            <div class="fw-bold small">Audit Trail</div>
+                            <small class="text-muted">All actions are logged</small>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const pinInput = document.getElementById('pin');
+            const form = document.getElementById('confirmForm');
+            
+            // Auto-format PIN input
+            pinInput.addEventListener('input', function() {
+                // Remove non-numeric characters
+                this.value = this.value.replace(/[^0-9]/g, '');
+                
+                // Limit to 6 digits
+                if (this.value.length > 6) {
+                    this.value = this.value.substring(0, 6);
+                }
+            });
+            
+            // Handle form submission
+            form.addEventListener('submit', function(e) {
+                const pin = pinInput.value.trim();
+                
+                if (pin.length !== 6) {
+                    e.preventDefault();
+                    showNotification('Please enter a valid 6-digit PIN code', 'warning');
+                    pinInput.focus();
+                    return;
+                }
+                
+                // Show loading state
+                const submitBtn = form.querySelector('button[type="submit"]');
+                submitBtn.innerHTML = '<span class="spinner"></span> Verifying...';
+                submitBtn.disabled = true;
+            });
+            
+            // Auto-focus on PIN input
+            pinInput.focus();
+            
+            // Add visual feedback for PIN input
+            pinInput.addEventListener('keyup', function() {
+                if (this.value.length === 6) {
+                    this.classList.add('is-valid');
+                    this.classList.remove('is-invalid');
+                } else if (this.value.length > 0) {
+                    this.classList.add('is-invalid');
+                    this.classList.remove('is-valid');
+                } else {
+                    this.classList.remove('is-valid', 'is-invalid');
+                }
+            });
+        });
+    </script>
+}

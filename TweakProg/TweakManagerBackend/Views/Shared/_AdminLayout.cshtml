@@ -1,95 +1,583 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Admin Panel</title>
+    <title>@ViewData["Title"] - TweakManager Admin</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-</head>
-<body class="admin-body">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.css" />
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary-color: #64748b;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #06b6d4;
+            --light-color: #f8fafc;
+            --dark-color: #1e293b;
+            --sidebar-width: 280px;
+            --header-height: 70px;
+        }
 
-    <header class="navbar navbar-dark sticky-top admin-header flex-md-nowrap p-0 shadow">
-        <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="@Url.Action("Index", "Admin")">TweakManager</a>
-        <button class="sidebar-toggler d-md-none" type="button" id="sidebarToggle">
-            <span data-feather="menu"></span>
-        </button>
-        <div class="navbar-nav">
-            <div class="nav-item text-nowrap">
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--light-color);
+            color: var(--dark-color);
+        }
+
+        /* Header Styles */
+        .admin-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            height: var(--header-height);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            border: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1030;
+        }
+
+        .admin-header .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: white !important;
+            text-decoration: none;
+        }
+
+        .admin-header .navbar-brand:hover {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .notification-badge {
+            position: relative;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .notification-badge:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        .notification-badge .badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--danger-color);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            position: fixed;
+            top: var(--header-height);
+            left: 0;
+            width: var(--sidebar-width);
+            height: calc(100vh - var(--header-height));
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            box-shadow: 4px 0 6px -1px rgba(0, 0, 0, 0.1);
+            z-index: 1020;
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .sidebar-header {
+            padding: 1.5rem 1rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+
+        .sidebar-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-section {
+            padding: 1rem 0;
+        }
+
+        .nav-section-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--secondary-color);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 0 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            color: var(--dark-color);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-radius: 0;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            color: var(--primary-color);
+            transform: translateX(4px);
+        }
+
+        .nav-link.active {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
+        }
+
+        .nav-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: white;
+        }
+
+        .nav-link i {
+            width: 20px;
+            margin-right: 0.75rem;
+            text-align: center;
+        }
+
+        .nav-link .badge {
+            margin-left: auto;
+            background: var(--danger-color);
+            color: white;
+            font-size: 0.7rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            margin-top: var(--header-height);
+            min-height: calc(100vh - var(--header-height));
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: 0;
+        }
+
+        .content-wrapper {
+            padding: 2rem;
+        }
+
+        /* Page Header */
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark-color);
+            margin: 0;
+        }
+
+        .page-subtitle {
+            color: var(--secondary-color);
+            margin: 0.5rem 0 0 0;
+        }
+
+        .page-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        /* Cards */
+        .modern-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .modern-card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Buttons */
+        .btn-modern {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            transition: all 0.3s ease;
+            border: none;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-modern:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary-modern {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .btn-success-modern {
+            background: linear-gradient(135deg, var(--success-color) 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-warning-modern {
+            background: linear-gradient(135deg, var(--warning-color) 0%, #d97706 100%);
+            color: white;
+        }
+
+        .btn-danger-modern {
+            background: linear-gradient(135deg, var(--danger-color) 0%, #dc2626 100%);
+            color: white;
+        }
+
+        /* Tables */
+        .modern-table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .modern-table table {
+            margin: 0;
+        }
+
+        .modern-table th {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border: none;
+            font-weight: 600;
+            color: var(--dark-color);
+            padding: 1rem;
+        }
+
+        .modern-table td {
+            border: none;
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .modern-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        /* Alerts */
+        .alert-modern {
+            border-radius: 8px;
+            border: none;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-success-modern {
+            background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+            color: #065f46;
+        }
+
+        .alert-danger-modern {
+            background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+            color: #991b1b;
+        }
+
+        .alert-warning-modern {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            color: #92400e;
+        }
+
+        .alert-info-modern {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            color: #1e40af;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .content-wrapper {
+                padding: 1rem;
+            }
+            
+            .page-header {
+                padding: 1.5rem;
+            }
+            
+            .page-title {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Loading States */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="navbar navbar-expand-lg admin-header">
+        <div class="container-fluid">
+            <button class="btn btn-link text-white d-lg-none me-3" type="button" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            
+            <a class="navbar-brand" href="@Url.Action("Index", "Admin")">
+                <i class="fas fa-cogs me-2"></i>
+                TweakManager Admin
+            </a>
+            
+            <div class="header-actions ms-auto">
+                <button class="notification-badge" type="button" data-bs-toggle="dropdown">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">3</span>
+                </button>
+                
+                <div class="dropdown-menu dropdown-menu-end">
+                    <h6 class="dropdown-header">Notifications</h6>
+                    <a class="dropdown-item" href="#">
+                        <i class="fas fa-key text-primary me-2"></i>
+                        New license key generated
+                    </a>
+                    <a class="dropdown-item" href="#">
+                        <i class="fas fa-user text-success me-2"></i>
+                        New user registered
+                    </a>
+                    <a class="dropdown-item" href="#">
+                        <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                        System warning
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item text-center" href="#">View all notifications</a>
+                </div>
+                
                 <partial name="_LoginPartial" />
             </div>
         </div>
     </header>
 
-    <div class="container-fluid">
-        <div class="row">
-            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-white sidebar">
-                <div class="position-sticky pt-3">
-                    <ul class="nav flex-column px-2">
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewData["ActivePage"] as string == "Dashboard" ? "active" : "")" asp-action="Index">
-                                <span data-feather="home"></span> Dashboard
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewData["ActivePage"] as string == "Keys" ? "active" : "")" asp-action="Keys">
-                                <span data-feather="key"></span> License Keys
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewData["ActivePage"] as string == "UserManagement" ? "active" : "")" asp-action="UserManagement">
-                                <span data-feather="users"></span> User Management
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewData["ActivePage"] as string == "Logs" ? "active" : "")" asp-action="Logs">
-                                <span data-feather="file-text"></span> Logs
-                            </a>
-                        </li>
-                    </ul>
-
-                    @if (ViewData["ActivePage"] as string != "Dashboard")
-                    {
-                        <div class="sidebar-footer">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index">
-                                <span data-feather="arrow-left-circle"></span> Back to Main Site
-                            </a>
-                        </div>
-                    }
-                </div>
-            </nav>
-
-            <main id="mainContent" class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-                @RenderBody()
-            </main>
+    <!-- Sidebar -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="sidebar-title">Navigation</div>
         </div>
-    </div>
+        
+        <div class="nav-section">
+            <div class="nav-section-title">Main</div>
+            <a class="nav-link @(ViewData["ActivePage"] as string == "Dashboard" ? "active" : "")" asp-action="Index">
+                <i class="fas fa-tachometer-alt"></i>
+                Dashboard
+            </a>
+            <a class="nav-link @(ViewData["ActivePage"] as string == "Keys" ? "active" : "")" asp-action="Keys">
+                <i class="fas fa-key"></i>
+                License Keys
+                <span class="badge">12</span>
+            </a>
+            <a class="nav-link @(ViewData["ActivePage"] as string == "UserManagement" ? "active" : "")" asp-action="UserManagement">
+                <i class="fas fa-users"></i>
+                User Management
+            </a>
+            <a class="nav-link @(ViewData["ActivePage"] as string == "Logs" ? "active" : "")" asp-action="Logs">
+                <i class="fas fa-file-alt"></i>
+                System Logs
+            </a>
+        </div>
+        
+        <div class="nav-section">
+            <div class="nav-section-title">Tools</div>
+            <a class="nav-link @(ViewData["ActivePage"] as string == "Analytics" ? "active" : "")" asp-action="Analytics">
+                <i class="fas fa-chart-bar"></i>
+                Analytics
+            </a>
+            <a class="nav-link @(ViewData["ActivePage"] as string == "Settings" ? "active" : "")" asp-action="Settings">
+                <i class="fas fa-cog"></i>
+                Settings
+            </a>
+            <a class="nav-link @(ViewData["ActivePage"] as string == "Notifications" ? "active" : "")" asp-action="Notifications">
+                <i class="fas fa-bell"></i>
+                Notifications
+                <span class="badge">3</span>
+            </a>
+        </div>
+        
+        <div class="nav-section mt-auto">
+            <a class="nav-link" asp-controller="Home" asp-action="Index">
+                <i class="fas fa-arrow-left"></i>
+                Back to Main Site
+            </a>
+        </div>
+    </nav>
 
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <div class="content-wrapper">
+            @RenderBody()
+        </div>
+    </main>
+
+    <!-- Scripts -->
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.min.js"></script>
     <script>
-        // Ikonok cseréje
-        feather.replace();
-
-        // Oldalsó menü nyitása/csukása
-        document.addEventListener('DOMContentLoaded', function () {
-            var sidebar = document.getElementById('sidebarMenu');
-            var mainContent = document.getElementById('mainContent');
-            var toggler = document.getElementById('sidebarToggle');
-
-            if (toggler) {
-                toggler.addEventListener('click', function() {
-                    sidebar.classList.toggle('collapsed');
+        // Sidebar toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            
+            // Toggle sidebar on mobile
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('show');
                 });
             }
-
-            // Kezdeti állapot beállítása képernyőméret alapján
-            if (window.innerWidth < 768) {
-                sidebar.classList.add('collapsed');
-            }
+            
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', function(event) {
+                if (window.innerWidth <= 768) {
+                    if (!sidebar.contains(event.target) && !sidebarToggle.contains(event.target)) {
+                        sidebar.classList.remove('show');
+                    }
+                }
+            });
+            
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    sidebar.classList.remove('show');
+                }
+            });
+            
+            // Auto-hide alerts after 5 seconds
+            setTimeout(function() {
+                const alerts = document.querySelectorAll('.alert-modern');
+                alerts.forEach(function(alert) {
+                    alert.style.transition = 'opacity 0.5s ease';
+                    alert.style.opacity = '0';
+                    setTimeout(function() {
+                        alert.remove();
+                    }, 500);
+                });
+            }, 5000);
+            
+            // Add loading states to forms
+            const forms = document.querySelectorAll('form');
+            forms.forEach(function(form) {
+                form.addEventListener('submit', function() {
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.innerHTML = '<span class="spinner"></span> Processing...';
+                        submitBtn.disabled = true;
+                    }
+                });
+            });
         });
+        
+        // Utility functions
+        function showNotification(message, type = 'info') {
+            const alertClass = `alert-${type}-modern`;
+            const icon = type === 'success' ? 'check-circle' : 
+                        type === 'danger' ? 'exclamation-circle' : 
+                        type === 'warning' ? 'exclamation-triangle' : 'info-circle';
+            
+            const notification = document.createElement('div');
+            notification.className = `alert-modern ${alertClass}`;
+            notification.innerHTML = `
+                <i class="fas fa-${icon} me-2"></i>
+                ${message}
+            `;
+            
+            const contentWrapper = document.querySelector('.content-wrapper');
+            contentWrapper.insertBefore(notification, contentWrapper.firstChild);
+            
+            setTimeout(function() {
+                notification.style.transition = 'opacity 0.5s ease';
+                notification.style.opacity = '0';
+                setTimeout(function() {
+                    notification.remove();
+                }, 500);
+            }, 5000);
+        }
     </script>
+    
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
