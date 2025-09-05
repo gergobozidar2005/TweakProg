@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,9 +8,6 @@ namespace TweakAppClient
 {
     public partial class LoginWindow : Window
     {
-        private const string ApiBaseUrl = "http://localhost:5000"; // Backend URL
-
-        private const string WebBaseUrl = "https://localhost:7223"; // Vagy amilyen porton a webes felület fut
 
         public LoginWindow()
         {
@@ -32,7 +29,7 @@ namespace TweakAppClient
                 var json = System.Text.Json.JsonSerializer.Serialize(loginData);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var response = await client.PostAsync($"{ApiBaseUrl}/api/accountapi/login", content);
+                var response = await client.PostAsync($"{Configuration.ApiBaseUrl}/api/accountapi/login", content);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -49,7 +46,7 @@ namespace TweakAppClient
         private void RegisterHyperlink_Click(object sender, RoutedEventArgs e)
         {
             // A regisztrációs URL a webes felületen
-            string registerUrl = $"{WebBaseUrl}/Identity/Account/Register";
+            string registerUrl = $"{Configuration.WebBaseUrl}/Identity/Account/Register";
 
             // A link megnyitása az alapértelmezett böngészőben
             Process.Start(new ProcessStartInfo(registerUrl) { UseShellExecute = true });

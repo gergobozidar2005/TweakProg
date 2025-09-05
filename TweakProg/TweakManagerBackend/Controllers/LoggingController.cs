@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using TweakManagerBackend.Data;
 using TweakManagerBackend.Models;
 
@@ -34,6 +34,40 @@ namespace TweakManagerBackend.Controllers
             _context.LogEntries.Add(logEntry);
             await _context.SaveChangesAsync();
             return Ok();
+        }
+
+        // Recent logs for dashboard
+        [HttpGet("recent")]
+        public async Task<IActionResult> GetRecentLogs()
+        {
+            var recentLogs = await _context.LogEntries
+                .OrderByDescending(l => l.Timestamp)
+                .Take(10)
+                .Select(l => new
+                {
+                    l.Timestamp,
+                    l.Username,
+                    Action = ExtractAction(l.Message),
+                    l.Message
+                })
+                .ToListAsync();
+
+            return Ok(recentLogs);
+        }
+
+        private string ExtractAction(string message)
+        {
+            if (message.Contains("cleanup") || message.Contains("clean"))
+                return "System Cleanup";
+            if (message.Contains("login"))
+                return "User Login";
+            if (message.Contains("register"))
+                return "User Registration";
+            if (message.Contains("temp"))
+                return "Temp Cleanup";
+            if (message.Contains("recycle"))
+                return "Recycle Bin";
+            return "System Activity";
         }
     }
 }

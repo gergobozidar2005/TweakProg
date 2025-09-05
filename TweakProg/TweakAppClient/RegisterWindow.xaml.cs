@@ -1,4 +1,4 @@
-﻿using System.Net.Http;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Windows;
 
@@ -6,9 +6,6 @@ namespace TweakAppClient
 {
     public partial class RegisterWindow : Window
     {
-        // Fontos: Indításkor nézd meg a konzolban, milyen porton fut a backend!
-        // Lehet, hogy nem 5123, hanem valami más. Azt írd ide!
-        private const string ApiBaseUrl = "http://localhost:5062";
         private readonly HttpClient _httpClient = new HttpClient();
 
         public RegisterWindow()
@@ -33,7 +30,7 @@ namespace TweakAppClient
 
             try
             {
-                var response = await _httpClient.PostAsJsonAsync($"{ApiBaseUrl}/api/registration/validate", requestData);
+                var response = await _httpClient.PostAsJsonAsync($"{Configuration.ApiBaseUrl}/api/registration/validate", requestData);
 
                 if (response.IsSuccessStatusCode)
                 {
