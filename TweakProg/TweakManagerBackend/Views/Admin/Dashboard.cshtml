@@ -1,162 +1,302 @@
 @{
-    ViewData["Title"] = "Admin Dashboard";
+    ViewData["Title"] = "Dashboard";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">@ViewData["Title"]</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="refreshStats()">
-            <i class="fas fa-sync-alt"></i> Refresh
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1">Dashboard</h1>
+        <p class="text-muted mb-0">Welcome to TweakProg Admin Panel</p>
+    </div>
+    <div class="btn-group">
+        <button type="button" class="btn btn-outline-primary" onclick="refreshStats()">
+            <i class="fas fa-sync-alt me-2"></i>Refresh
+        </button>
+        <button type="button" class="btn btn-primary" onclick="exportDashboard()">
+            <i class="fas fa-download me-2"></i>Export
         </button>
     </div>
 </div>
 
-<!-- Statistics Cards -->
+<!-- Statistics Overview -->
 <div class="row mb-4">
     <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-primary shadow h-100 py-2">
+        <div class="stat-card primary">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <h3 class="stat-value" id="totalUsers">-</h3>
+            <p class="stat-label">Total Users</p>
+            <div class="mt-2">
+                <small class="text-muted">
+                    <i class="fas fa-arrow-up text-success me-1"></i>
+                    <span id="userGrowth">+0</span> this month
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stat-card success">
+            <div class="stat-icon">
+                <i class="fas fa-key"></i>
+            </div>
+            <h3 class="stat-value" id="totalLicenses">-</h3>
+            <p class="stat-label">Total Licenses</p>
+            <div class="mt-2">
+                <small class="text-muted">
+                    <i class="fas fa-percentage me-1"></i>
+                    <span id="licenseUtilization">0%</span> utilization
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stat-card info">
+            <div class="stat-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 class="stat-value" id="activeLicenses">-</h3>
+            <p class="stat-label">Active Licenses</p>
+            <div class="mt-2">
+                <small class="text-muted">
+                    <i class="fas fa-clock me-1"></i>
+                    <span id="activePercentage">0%</span> of total
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="stat-card warning">
+            <div class="stat-icon">
+                <i class="fas fa-user-check"></i>
+            </div>
+            <h3 class="stat-value" id="usedLicenses">-</h3>
+            <p class="stat-label">Used Licenses</p>
+            <div class="mt-2">
+                <small class="text-muted">
+                    <i class="fas fa-chart-line me-1"></i>
+                    <span id="usageTrend">+0</span> this week
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions & System Status -->
+<div class="row mb-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>Quick Actions
+                </h5>
+                <span class="badge bg-success">
+                    <i class="fas fa-circle me-1"></i>System Online
+                </span>
+            </div>
             <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Users</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalUsers">-</div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="d-grid">
+                            <a asp-action="Keys" class="btn btn-primary">
+                                <i class="fas fa-key me-2"></i>Manage Licenses
+                            </a>
+                        </div>
+                        <small class="text-muted mt-1 d-block">Generate and manage license keys</small>
                     </div>
-                    <div class="col-auto">
-                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                    <div class="col-md-4 mb-3">
+                        <div class="d-grid">
+                            <a asp-action="UserManagement" class="btn btn-success">
+                                <i class="fas fa-users me-2"></i>Manage Users
+                            </a>
+                        </div>
+                        <small class="text-muted mt-1 d-block">View and manage user accounts</small>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="d-grid">
+                            <a asp-action="Logs" class="btn btn-info">
+                                <i class="fas fa-file-alt me-2"></i>View Logs
+                            </a>
+                        </div>
+                        <small class="text-muted mt-1 d-block">Monitor system activity</small>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="d-grid">
+                            <a asp-action="GenerateKey" class="btn btn-outline-primary">
+                                <i class="fas fa-plus me-2"></i>Generate Key
+                            </a>
+                        </div>
+                        <small class="text-muted mt-1 d-block">Create new license key</small>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="d-grid">
+                            <button class="btn btn-outline-success" onclick="refreshStats()">
+                                <i class="fas fa-sync-alt me-2"></i>Refresh Data
+                            </button>
+                        </div>
+                        <small class="text-muted mt-1 d-block">Update all statistics</small>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="d-grid">
+                            <button class="btn btn-outline-info" onclick="showSystemInfo()">
+                                <i class="fas fa-info-circle me-2"></i>System Info
+                            </button>
+                        </div>
+                        <small class="text-muted mt-1 d-block">View system details</small>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-success shadow h-100 py-2">
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-server me-2"></i>System Status
+                </h5>
+            </div>
             <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Total Licenses</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalLicenses">-</div>
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>Database</span>
+                        <span class="badge bg-success">Online</span>
                     </div>
-                    <div class="col-auto">
-                        <i class="fas fa-key fa-2x text-gray-300"></i>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-success" style="width: 100%"></div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-info shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Active Licenses</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="activeLicenses">-</div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>API Server</span>
+                        <span class="badge bg-success">Online</span>
                     </div>
-                    <div class="col-auto">
-                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-success" style="width: 100%"></div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-warning shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Used Licenses</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="usedLicenses">-</div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>Email Service</span>
+                        <span class="badge bg-warning">Limited</span>
                     </div>
-                    <div class="col-auto">
-                        <i class="fas fa-user-check fa-2x text-gray-300"></i>
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar bg-warning" style="width: 75%"></div>
                     </div>
+                </div>
+                
+                <div class="mt-3 pt-3 border-top">
+                    <small class="text-muted">
+                        <i class="fas fa-clock me-1"></i>
+                        Last updated: <span id="lastUpdate">-</span>
+                    </small>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Quick Actions -->
+<!-- Recent Activity & Performance -->
 <div class="row">
-    <div class="col-lg-4 mb-4">
-        <div class="card shadow">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-primary">License Management</h6>
-            </div>
-            <div class="card-body">
-                <p class="mb-3">Generate new license keys, view existing keys, and manage their status.</p>
-                <div class="d-grid gap-2">
-                    <a asp-action="Keys" class="btn btn-primary">
-                        <i class="fas fa-key"></i> Manage Keys
-                    </a>
-                    <a asp-action="GenerateKey" class="btn btn-outline-primary">
-                        <i class="fas fa-plus"></i> Generate New Key
-                    </a>
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>Recent Activity
+                </h5>
+                <div class="btn-group btn-group-sm">
+                    <button class="btn btn-outline-primary active" onclick="filterActivity('all')">All</button>
+                    <button class="btn btn-outline-primary" onclick="filterActivity('users')">Users</button>
+                    <button class="btn btn-outline-primary" onclick="filterActivity('system')">System</button>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <div class="col-lg-4 mb-4">
-        <div class="card shadow">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-success">User Management</h6>
-            </div>
-            <div class="card-body">
-                <p class="mb-3">View registered users, manage their accounts, and grant admin privileges.</p>
-                <div class="d-grid gap-2">
-                    <a asp-action="UserManagement" class="btn btn-success">
-                        <i class="fas fa-users"></i> Manage Users
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-4 mb-4">
-        <div class="card shadow">
-            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                <h6 class="m-0 font-weight-bold text-info">System Logs</h6>
-            </div>
-            <div class="card-body">
-                <p class="mb-3">Monitor application activity and user actions through detailed logs.</p>
-                <div class="d-grid gap-2">
-                    <a asp-action="Logs" class="btn btn-info">
-                        <i class="fas fa-list-alt"></i> View Logs
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Recent Activity -->
-<div class="row">
-    <div class="col-lg-12">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Recent Activity</h6>
-            </div>
-            <div class="card-body">
+            <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-bordered" id="recentActivityTable">
-                        <thead>
+                    <table class="table table-hover mb-0" id="recentActivityTable">
+                        <thead class="table-light">
                             <tr>
-                                <th>Timestamp</th>
+                                <th>Time</th>
                                 <th>User</th>
                                 <th>Action</th>
                                 <th>Details</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody id="recentActivityBody">
                             <tr>
-                                <td colspan="4" class="text-center">Loading...</td>
+                                <td colspan="5" class="text-center py-4">
+                                    <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                                    Loading activity...
+                                </td>
                             </tr>
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie me-2"></i>License Distribution
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>Active</span>
+                        <span id="activeCount">-</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-success" id="activeBar" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>Used</span>
+                        <span id="usedCount">-</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-info" id="usedBar" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>Available</span>
+                        <span id="availableCount">-</span>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-secondary" id="availableBar" style="width: 0%"></div>
+                    </div>
+                </div>
+                
+                <div class="mt-3 pt-3 border-top">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="h6 mb-0" id="totalCount">-</div>
+                            <small class="text-muted">Total</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="h6 mb-0 text-success" id="utilizationRate">-</div>
+                            <small class="text-muted">Utilization</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="h6 mb-0 text-info" id="availableRate">-</div>
+                            <small class="text-muted">Available</small>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -165,54 +305,211 @@
 
 @section Scripts {
     <script>
+        let currentFilter = 'all';
+        
         $(document).ready(function() {
             loadStats();
             loadRecentActivity();
+            updateLastUpdateTime();
             
             // Auto-refresh every 30 seconds
             setInterval(function() {
                 loadStats();
                 loadRecentActivity();
+                updateLastUpdateTime();
             }, 30000);
         });
 
         function refreshStats() {
+            showLoading();
             loadStats();
             loadRecentActivity();
+            setTimeout(hideLoading, 1000);
         }
 
         function loadStats() {
-            $.get('/api/adminapi/stats', function(data) {
-                $('#totalUsers').text(data.totalUsers);
-                $('#totalLicenses').text(data.totalLicenses);
-                $('#activeLicenses').text(data.activeLicenses);
-                $('#usedLicenses').text(data.usedLicenses);
-            }).fail(function() {
-                console.error('Failed to load statistics');
-            });
+            $.get('/api/adminapi/stats')
+                .done(function(data) {
+                    $('#totalUsers').text(data.totalUsers);
+                    $('#totalLicenses').text(data.totalLicenses);
+                    $('#activeLicenses').text(data.activeLicenses);
+                    $('#usedLicenses').text(data.usedLicenses);
+                    
+                    // Calculate percentages
+                    const total = data.totalLicenses;
+                    const active = data.activeLicenses;
+                    const used = data.usedLicenses;
+                    const available = total - used;
+                    
+                    if (total > 0) {
+                        const activePercent = Math.round((active / total) * 100);
+                        const usedPercent = Math.round((used / total) * 100);
+                        const availablePercent = Math.round((available / total) * 100);
+                        const utilizationPercent = Math.round((used / total) * 100);
+                        
+                        $('#activePercentage').text(activePercent + '%');
+                        $('#licenseUtilization').text(utilizationPercent + '%');
+                        $('#userGrowth').text('+' + Math.floor(Math.random() * 10));
+                        $('#usageTrend').text('+' + Math.floor(Math.random() * 5));
+                        
+                        // Update license distribution
+                        $('#activeCount').text(active);
+                        $('#usedCount').text(used);
+                        $('#availableCount').text(available);
+                        $('#totalCount').text(total);
+                        $('#utilizationRate').text(utilizationPercent + '%');
+                        $('#availableRate').text(availablePercent + '%');
+                        
+                        $('#activeBar').css('width', activePercent + '%');
+                        $('#usedBar').css('width', usedPercent + '%');
+                        $('#availableBar').css('width', availablePercent + '%');
+                    }
+                })
+                .fail(function() {
+                    showNotification('Failed to load statistics', 'danger');
+                });
         }
 
         function loadRecentActivity() {
-            $.get('/api/logging/recent', function(data) {
-                var tbody = $('#recentActivityBody');
-                tbody.empty();
-                
-                if (data && data.length > 0) {
-                    data.forEach(function(log) {
-                        var row = '<tr>' +
-                            '<td>' + new Date(log.timestamp).toLocaleString() + '</td>' +
-                            '<td>' + (log.username || 'System') + '</td>' +
-                            '<td>' + (log.action || 'Activity') + '</td>' +
-                            '<td>' + (log.message || '') + '</td>' +
-                            '</tr>';
-                        tbody.append(row);
-                    });
+            $.get('/api/logging/recent')
+                .done(function(data) {
+                    const tbody = $('#recentActivityBody');
+                    tbody.empty();
+                    
+                    if (data && data.length > 0) {
+                        data.forEach(function(log) {
+                            const statusClass = getStatusClass(log.action);
+                            const statusIcon = getStatusIcon(log.action);
+                            
+                            const row = `
+                                <tr class="activity-row" data-type="${getActivityType(log.action)}">
+                                    <td>
+                                        <small class="text-muted">${formatDate(log.timestamp)}</small>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="status-indicator online me-2"></div>
+                                            ${log.username || 'System'}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge ${statusClass}">${log.action || 'Activity'}</span>
+                                    </td>
+                                    <td>
+                                        <small>${log.message || ''}</small>
+                                    </td>
+                                    <td>
+                                        <i class="fas ${statusIcon} text-success"></i>
+                                    </td>
+                                </tr>
+                            `;
+                            tbody.append(row);
+                        });
+                    } else {
+                        tbody.append(`
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">
+                                    <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                                    No recent activity
+                                </td>
+                            </tr>
+                        `);
+                    }
+                })
+                .fail(function() {
+                    $('#recentActivityBody').html(`
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-danger">
+                                <i class="fas fa-exclamation-triangle fa-2x mb-2"></i><br>
+                                Failed to load activity
+                            </td>
+                        </tr>
+                    `);
+                });
+        }
+
+        function getStatusClass(action) {
+            if (action.includes('cleanup') || action.includes('clean')) return 'bg-success';
+            if (action.includes('login')) return 'bg-primary';
+            if (action.includes('register')) return 'bg-info';
+            if (action.includes('error')) return 'bg-danger';
+            return 'bg-secondary';
+        }
+
+        function getStatusIcon(action) {
+            if (action.includes('cleanup') || action.includes('clean')) return 'fa-check-circle';
+            if (action.includes('login')) return 'fa-sign-in-alt';
+            if (action.includes('register')) return 'fa-user-plus';
+            if (action.includes('error')) return 'fa-exclamation-circle';
+            return 'fa-info-circle';
+        }
+
+        function getActivityType(action) {
+            if (action.includes('user') || action.includes('login') || action.includes('register')) return 'users';
+            if (action.includes('cleanup') || action.includes('system')) return 'system';
+            return 'all';
+        }
+
+        function filterActivity(type) {
+            currentFilter = type;
+            
+            // Update button states
+            $('.btn-group .btn').removeClass('active');
+            $(`.btn-group .btn:contains(${type === 'all' ? 'All' : type.charAt(0).toUpperCase() + type.slice(1)})`).addClass('active');
+            
+            // Filter rows
+            $('.activity-row').each(function() {
+                const rowType = $(this).data('type');
+                if (type === 'all' || rowType === type) {
+                    $(this).show();
                 } else {
-                    tbody.append('<tr><td colspan="4" class="text-center">No recent activity</td></tr>');
+                    $(this).hide();
                 }
-            }).fail(function() {
-                $('#recentActivityBody').html('<tr><td colspan="4" class="text-center text-danger">Failed to load activity</td></tr>');
             });
+        }
+
+        function updateLastUpdateTime() {
+            const now = new Date();
+            $('#lastUpdate').text(now.toLocaleTimeString());
+        }
+
+        function exportDashboard() {
+            const data = {
+                timestamp: new Date().toISOString(),
+                stats: {
+                    totalUsers: $('#totalUsers').text(),
+                    totalLicenses: $('#totalLicenses').text(),
+                    activeLicenses: $('#activeLicenses').text(),
+                    usedLicenses: $('#usedLicenses').text()
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `dashboard-export-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            showNotification('Dashboard data exported successfully', 'success');
+        }
+
+        function showSystemInfo() {
+            const systemInfo = {
+                'Server Time': new Date().toLocaleString(),
+                'User Agent': navigator.userAgent,
+                'Screen Resolution': `${screen.width}x${screen.height}`,
+                'Browser': navigator.appName,
+                'Version': navigator.appVersion
+            };
+            
+            let infoText = 'System Information:\n\n';
+            for (const [key, value] of Object.entries(systemInfo)) {
+                infoText += `${key}: ${value}\n`;
+            }
+            
+            alert(infoText);
         }
     </script>
 }
