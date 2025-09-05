@@ -1,0 +1,95 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Admin Panel</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="admin-body">
+
+    <header class="navbar navbar-dark sticky-top admin-header flex-md-nowrap p-0 shadow">
+        <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3" href="@Url.Action("Index", "Admin")">TweakManager</a>
+        <button class="sidebar-toggler d-md-none" type="button" id="sidebarToggle">
+            <span data-feather="menu"></span>
+        </button>
+        <div class="navbar-nav">
+            <div class="nav-item text-nowrap">
+                <partial name="_LoginPartial" />
+            </div>
+        </div>
+    </header>
+
+    <div class="container-fluid">
+        <div class="row">
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-white sidebar">
+                <div class="position-sticky pt-3">
+                    <ul class="nav flex-column px-2">
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewData["ActivePage"] as string == "Dashboard" ? "active" : "")" asp-action="Index">
+                                <span data-feather="home"></span> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewData["ActivePage"] as string == "Keys" ? "active" : "")" asp-action="Keys">
+                                <span data-feather="key"></span> License Keys
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewData["ActivePage"] as string == "UserManagement" ? "active" : "")" asp-action="UserManagement">
+                                <span data-feather="users"></span> User Management
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewData["ActivePage"] as string == "Logs" ? "active" : "")" asp-action="Logs">
+                                <span data-feather="file-text"></span> Logs
+                            </a>
+                        </li>
+                    </ul>
+
+                    @if (ViewData["ActivePage"] as string != "Dashboard")
+                    {
+                        <div class="sidebar-footer">
+                            <a class="nav-link" asp-controller="Home" asp-action="Index">
+                                <span data-feather="arrow-left-circle"></span> Back to Main Site
+                            </a>
+                        </div>
+                    }
+                </div>
+            </nav>
+
+            <main id="mainContent" class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <script>
+        // Ikonok cseréje
+        feather.replace();
+
+        // Oldalsó menü nyitása/csukása
+        document.addEventListener('DOMContentLoaded', function () {
+            var sidebar = document.getElementById('sidebarMenu');
+            var mainContent = document.getElementById('mainContent');
+            var toggler = document.getElementById('sidebarToggle');
+
+            if (toggler) {
+                toggler.addEventListener('click', function() {
+                    sidebar.classList.toggle('collapsed');
+                });
+            }
+
+            // Kezdeti állapot beállítása képernyőméret alapján
+            if (window.innerWidth < 768) {
+                sidebar.classList.add('collapsed');
+            }
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

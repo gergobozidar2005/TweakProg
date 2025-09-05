@@ -1,0 +1,34 @@
+﻿@{
+    ViewData["Title"] = "Confirm Admin Promotion";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">@ViewData["Title"]</h1>
+</div>
+
+@if (TempData["InfoMessage"] != null)
+{
+    <div class="alert alert-info">@TempData["InfoMessage"]</div>
+}
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                Enter PIN
+            </div>
+            <div class="card-body">
+                <p>Please enter the 6-digit PIN sent to the user's email to confirm this action.</p>
+                <form asp-action="ConfirmAdminPromotion" method="post">
+                    <div class="mb-3">
+                        <label for="pin" class="form-label">Confirmation PIN</label>
+                        <input name="pin" class="form-control" maxlength="6" autofocus />
+                    </div>
+                    <button type="submit" class="btn btn-success">Confirm Promotion</button>
+                    <a asp-action="UserManagement" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

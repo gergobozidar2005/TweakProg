@@ -1,0 +1,6 @@
+@TweakManagerBackend_HostAddress = http://localhost:5062
+
+GET {{TweakManagerBackend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

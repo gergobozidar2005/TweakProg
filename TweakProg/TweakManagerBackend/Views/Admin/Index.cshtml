@@ -1,0 +1,62 @@
+﻿@model IEnumerable<TweakManagerBackend.Models.LicenseKey>
+
+@{
+    ViewData["Title"] = "License Keys";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">@ViewData["Title"]</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a asp-action="GenerateKey" class="btn btn-sm btn-outline-primary">Generate New Key</a>
+    </div>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover table-sm">
+        <thead>
+            <tr>
+                <th>Key Value</th>
+                <th>Assigned To</th>
+                <th>Hardware ID</th>
+                <th>Created</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var key in Model)
+            {
+                <tr>
+                    <td><code>@key.KeyValue</code></td>
+                    <td>@key.AssignedToUsername</td>
+                    <td>@key.AssignedToHardwareId</td>
+                    <td>@key.CreationDate.ToShortDateString()</td>
+                    <td>
+                        @if (key.IsActive)
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger">Inactive</span>
+                        }
+                    </td>
+                    <td>
+                        <form asp-action="ToggleKeyState" method="post" class="d-inline">
+                            <input type="hidden" name="keyId" value="@key.Id" />
+                            <button type="submit" class="btn btn-@(key.IsActive ? "warning" : "success") btn-sm">
+                                @(key.IsActive ? "Deactivate" : "Activate")
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

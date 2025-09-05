@@ -1,0 +1,36 @@
+﻿@{
+    ViewData["Title"] = "Generate New Key";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">@ViewData["Title"]</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                Key Details
+            </div>
+            <div class="card-body">
+                <form asp-action="GenerateKey" method="post">
+                    @if (TempData["ErrorMessage"] != null)
+                    {
+                        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+                    }
+                    <div class="mb-3">
+                        <label for="assignedToUsername" class="form-label">Assign to Username</label>
+                        <input type="text" name="assignedToUsername" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="assignedToHardwareId" class="form-label">Assign to Hardware ID</label>
+                        <input type="text" name="assignedToHardwareId" class="form-control" />
+                    </div>
+                    <button type="submit" class="btn btn-primary">Generate Key</button>
+                    <a asp-action="Keys" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

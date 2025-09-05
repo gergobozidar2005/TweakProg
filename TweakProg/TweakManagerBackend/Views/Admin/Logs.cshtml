@@ -1,0 +1,32 @@
+﻿@model IEnumerable<TweakManagerBackend.Models.LogEntry>
+
+@{
+    ViewData["Title"] = "Application Logs";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">@ViewData["Title"]</h1>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover table-sm">
+        <thead>
+            <tr>
+                <th>Timestamp</th>
+                <th>Username</th>
+                <th>Message</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var log in Model)
+            {
+                <tr>
+                    <td>@log.Timestamp</td>
+                    <td>@log.Username</td>
+                    <td>@log.Message</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

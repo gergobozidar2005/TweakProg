@@ -1,0 +1,17 @@
+﻿@page
+
+@if (Model.DisplayedHardwareId != null)
+{
+    <div class="alert alert-info mt-3">
+        <h5 class="alert-heading">Associated Hardware ID:</h5>
+        <p><code>@Model.DisplayedHardwareId</code></p>
+    </div>
+}
+
+@model ConfirmEmailModel
+@{
+    ViewData["Title"] = "Confirm email";
+}
+
+<h1>@ViewData["Title"]</h1>
+<partial name="_StatusMessage" model="Model.StatusMessage" />

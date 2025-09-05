@@ -1,0 +1,197 @@
+﻿/* Please see documentation at https://docs.microsoft.com/aspnet/core/client-side/bundling-and-minification\
+for details on configuring this project to bundle and minify static web assets. */
+
+a.navbar-brand {
+  white-space: normal;
+  text-align: center;
+  word-break: break-all;
+}
+
+a {
+  color: #0077cc;
+}
+
+.form-control:focus {
+    border-color: #0077cc;
+    box-shadow: 0 0 0 0.2rem #0077cc;
+}
+
+.btn-primary {
+  color: #fff;
+  background-color: #1b6ec2;
+  border-color: #1861ac;
+}
+
+.nav-pills .nav-link.active, .nav-pills .show > .nav-link {
+  color: #fff;
+  background-color: #1b6ec2;
+  border-color: #1861ac;
+}
+
+.btn-link.nav-link:focus {
+  outline: black auto 1px;
+}
+
+html {
+  font-size: 14px;
+}
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.container {
+  max-width: 960px;
+}
+
+.pricing-header {
+  max-width: 700px;
+}
+
+.border-top {
+  border-top: 1px solid #e5e5e5;
+}
+.border-bottom {
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.box-shadow {
+  box-shadow: 0 .25rem .75rem rgba(0, 0, 0, .05);
+}
+
+button.accept-policy {
+  font-size: 1rem;
+  line-height: inherit;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  overflow: scroll;
+  white-space: nowrap;
+  line-height: 60px;
+}
+
+/* === ÚJ ADMIN FELÜLET STÍLUSOK === */
+
+:root {
+    --admin-header-height: 56px;
+}
+
+body.admin-body {
+    background-color: #f8f9fa;
+}
+
+.admin-header {
+    background-color: #212529;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    z-index: 1030; /* Bootstrap's standard for fixed headers */
+}
+
+.admin-header .navbar-brand {
+    color: #fff;
+}
+
+.admin-header .nav-link {
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.admin-header .nav-link:hover {
+    color: #fff;
+}
+
+.sidebar-toggler {
+    color: rgba(255, 255, 255, 0.75);
+    border: none;
+    background: none;
+    padding: 0 .75rem;
+}
+
+.sidebar-toggler:hover {
+    color: #fff;
+}
+
+.sidebar {
+    width: 250px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1020;
+    padding-top: var(--admin-header-height);
+    background-color: #fff;
+    border-right: 1px solid #dee2e6;
+    transition: margin-left 0.3s ease-in-out;
+}
+
+.sidebar.collapsed {
+    margin-left: -250px;
+}
+
+.sidebar .nav-link {
+    display: flex;
+    align-items: center;
+    color: #333;
+    font-weight: 500;
+}
+
+.sidebar .nav-link .feather {
+    margin-right: 12px;
+    color: #6c757d;
+    width: 20px;
+    height: 20px;
+}
+
+.sidebar .nav-link.active {
+    color: #0d6efd;
+    background-color: #e9ecef;
+    border-radius: 0.25rem;
+}
+
+.sidebar .nav-link.active .feather {
+    color: #0d6efd;
+}
+
+.sidebar-footer {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    padding: 1rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.main-content {
+    margin-left: 250px;
+    padding-top: var(--admin-header-height);
+    transition: margin-left 0.3s ease-in-out;
+}
+
+.main-content.collapsed {
+    margin-left: 0;
+}
+
+/* Kisebb képernyőkön a sidebar alapból rejtett */
+@media (max-width: 767.98px) {
+    .sidebar {
+        margin-left: -250px;
+    }
+    .sidebar.collapsed {
+        margin-left: 0;
+    }
+    .main-content {
+        margin-left: 0;
+    }
+    .main-content.collapsed {
+        margin-left: 0;
+    }
+}

@@ -1,0 +1,62 @@
+﻿@using TweakManagerBackend.Models
+@using Microsoft.AspNetCore.Identity
+@model IEnumerable<ApplicationUser>
+@inject UserManager<ApplicationUser> UserManager
+
+@{
+    ViewData["Title"] = "User Management";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">@ViewData["Title"]</h1>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<div class="table-responsive">
+    <table class="table table-striped table-hover table-sm">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Roles</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.UserName</td>
+                    <td>@user.Email</td>
+                    <td>
+                        @{
+                            var roles = await UserManager.GetRolesAsync(user);
+                            foreach (var role in roles)
+                            {
+                                <span class="badge bg-info me-1">@role</span>
+                            }
+                        }
+                    </td>
+                    <td>
+                        @if (!roles.Contains("Admin"))
+                        {
+                            <form asp-action="InitiateAdminPromotion" method="post" onsubmit="return confirm('Are you sure you want to promote this user to Admin?');">
+                                <input type="hidden" name="userId" value="@user.Id" />
+                                <button type="submit" class="btn btn-primary btn-sm">Promote to Admin</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
