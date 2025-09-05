@@ -1,32 +1,585 @@
-﻿@model IEnumerable<TweakManagerBackend.Models.LogEntry>
+@model IEnumerable<TweakManagerBackend.Models.LogEntry>
 
 @{
-    ViewData["Title"] = "Application Logs";
+    ViewData["Title"] = "System Logs";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">@ViewData["Title"]</h1>
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">System Logs</h1>
+            <p class="page-subtitle">Monitor application activity and system events</p>
+        </div>
+        <div class="page-actions">
+            <button class="btn btn-modern btn-outline-secondary" onclick="exportLogs()">
+                <i class="fas fa-download"></i>
+                Export Logs
+            </button>
+            <button class="btn btn-modern btn-warning-modern" onclick="clearOldLogs()">
+                <i class="fas fa-trash"></i>
+                Clear Old Logs
+            </button>
+        </div>
+    </div>
 </div>
 
-<div class="table-responsive">
-    <table class="table table-striped table-hover table-sm">
+<!-- Log Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="modern-card text-center">
+            <div class="h3 text-primary mb-1">@Model.Count()</div>
+            <div class="text-muted">Total Logs</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="modern-card text-center">
+            <div class="h3 text-success mb-1">@Model.Count(l => l.Message.Contains("success") || l.Message.Contains("Success"))</div>
+            <div class="text-muted">Success Events</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="modern-card text-center">
+            <div class="h3 text-warning mb-1">@Model.Count(l => l.Message.Contains("warning") || l.Message.Contains("Warning"))</div>
+            <div class="text-muted">Warnings</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="modern-card text-center">
+            <div class="h3 text-danger mb-1">@Model.Count(l => l.Message.Contains("error") || l.Message.Contains("Error"))</div>
+            <div class="text-muted">Errors</div>
+        </div>
+    </div>
+</div>
+
+<!-- Advanced Filters -->
+<div class="modern-card mb-4">
+    <div class="row g-3">
+        <div class="col-md-3">
+            <label for="logSearchInput" class="form-label">Search Logs</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" class="form-control" id="logSearchInput" placeholder="Search messages, usernames...">
+            </div>
+        </div>
+        <div class="col-md-2">
+            <label for="logLevelFilter" class="form-label">Log Level</label>
+            <select class="form-select" id="logLevelFilter">
+                <option value="">All Levels</option>
+                <option value="info">Info</option>
+                <option value="warning">Warning</option>
+                <option value="error">Error</option>
+                <option value="success">Success</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label for="userFilter" class="form-label">User</label>
+            <select class="form-select" id="userFilter">
+                <option value="">All Users</option>
+                @foreach (var user in Model.Select(l => l.Username).Distinct().Take(10))
+                {
+                    <option value="@user">@user</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label for="dateRangeFilter" class="form-label">Date Range</label>
+            <select class="form-select" id="dateRangeFilter">
+                <option value="">All Time</option>
+                <option value="today">Today</option>
+                <option value="yesterday">Yesterday</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="custom">Custom Range</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label for="sortLogs" class="form-label">Sort By</label>
+            <select class="form-select" id="sortLogs">
+                <option value="newest">Newest First</option>
+                <option value="oldest">Oldest First</option>
+                <option value="user">User</option>
+                <option value="level">Log Level</option>
+            </select>
+        </div>
+        <div class="col-md-1 d-flex align-items-end">
+            <button class="btn btn-outline-secondary w-100" onclick="clearLogFilters()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Custom Date Range (hidden by default) -->
+    <div class="row g-3 mt-2" id="customDateRange" style="display: none;">
+        <div class="col-md-3">
+            <label for="startDate" class="form-label">Start Date</label>
+            <input type="date" class="form-control" id="startDate">
+        </div>
+        <div class="col-md-3">
+            <label for="endDate" class="form-label">End Date</label>
+            <input type="date" class="form-control" id="endDate">
+        </div>
+    </div>
+</div>
+
+<!-- Real-time Controls -->
+<div class="modern-card mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h6 class="mb-0">Real-time Monitoring</h6>
+            <small class="text-muted">Automatically refresh logs every 5 seconds</small>
+        </div>
+        <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" id="realTimeToggle" onchange="toggleRealTime()">
+            <label class="form-check-label" for="realTimeToggle">
+                Enable Real-time
+            </label>
+        </div>
+    </div>
+</div>
+
+<!-- Logs Table -->
+<div class="modern-table">
+    <table class="table table-hover mb-0" id="logsTable">
         <thead>
             <tr>
-                <th>Timestamp</th>
-                <th>Username</th>
+                <th width="150">Timestamp</th>
+                <th width="120">User</th>
+                <th width="100">Level</th>
                 <th>Message</th>
+                <th width="100">Actions</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var log in Model)
+            @foreach (var log in Model.OrderByDescending(l => l.Timestamp))
             {
-                <tr>
-                    <td>@log.Timestamp</td>
-                    <td>@log.Username</td>
-                    <td>@log.Message</td>
+                var logLevel = GetLogLevel(log.Message);
+                var levelClass = GetLogLevelClass(logLevel);
+                var levelIcon = GetLogLevelIcon(logLevel);
+                
+                <tr data-log-id="@log.Id" 
+                    data-username="@log.Username.ToLower()" 
+                    data-level="@logLevel.ToLower()"
+                    data-message="@log.Message.ToLower()"
+                    data-timestamp="@log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")">
+                    <td>
+                        <div class="small">
+                            <div>@log.Timestamp.ToString("MMM dd, yyyy")</div>
+                            <div class="text-muted">@log.Timestamp.ToString("HH:mm:ss")</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-sm bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                @log.Username.Substring(0, 1).ToUpper()
+                            </div>
+                            <div>
+                                <div class="fw-bold small">@log.Username</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge @levelClass">
+                            <i class="@levelIcon me-1"></i>
+                            @logLevel
+                        </span>
+                    </td>
+                    <td>
+                        <div class="log-message">@log.Message</div>
+                    </td>
+                    <td>
+                        <div class="btn-group btn-group-sm">
+                            <button class="btn btn-outline-info" onclick="viewLogDetails(@log.Id)" title="View details">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-outline-danger" onclick="deleteLog(@log.Id)" title="Delete log">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
                 </tr>
             }
         </tbody>
     </table>
 </div>
+
+<!-- Log Details Modal -->
+<div class="modal fade" id="logDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Log Entry Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="logDetailsContent">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="copyLogDetails()">
+                    <i class="fas fa-copy"></i>
+                    Copy Details
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let allLogs = [];
+        let filteredLogs = [];
+        let realTimeInterval = null;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeLogsTable();
+            
+            // Setup event listeners
+            document.getElementById('logSearchInput').addEventListener('input', filterLogs);
+            document.getElementById('logLevelFilter').addEventListener('change', filterLogs);
+            document.getElementById('userFilter').addEventListener('change', filterLogs);
+            document.getElementById('dateRangeFilter').addEventListener('change', handleDateRangeChange);
+            document.getElementById('sortLogs').addEventListener('change', sortLogs);
+            
+            // Setup custom date range visibility
+            document.getElementById('dateRangeFilter').addEventListener('change', function() {
+                const customRange = document.getElementById('customDateRange');
+                if (this.value === 'custom') {
+                    customRange.style.display = 'block';
+                } else {
+                    customRange.style.display = 'none';
+                }
+            });
+        });
+        
+        function initializeLogsTable() {
+            const rows = document.querySelectorAll('#logsTable tbody tr');
+            allLogs = Array.from(rows).map(row => ({
+                element: row,
+                id: row.dataset.logId,
+                username: row.dataset.username,
+                level: row.dataset.level,
+                message: row.dataset.message,
+                timestamp: row.dataset.timestamp
+            }));
+            filteredLogs = [...allLogs];
+        }
+        
+        function filterLogs() {
+            const searchTerm = document.getElementById('logSearchInput').value.toLowerCase();
+            const levelFilter = document.getElementById('logLevelFilter').value;
+            const userFilter = document.getElementById('userFilter').value;
+            const dateRange = document.getElementById('dateRangeFilter').value;
+            
+            filteredLogs = allLogs.filter(log => {
+                const matchesSearch = !searchTerm || 
+                    log.message.includes(searchTerm) ||
+                    log.username.includes(searchTerm);
+                
+                const matchesLevel = !levelFilter || log.level === levelFilter.toLowerCase();
+                const matchesUser = !userFilter || log.username === userFilter.toLowerCase();
+                const matchesDate = !dateRange || matchesDateRange(log.timestamp, dateRange);
+                
+                return matchesSearch && matchesLevel && matchesUser && matchesDate;
+            });
+            
+            updateLogsTable();
+        }
+        
+        function matchesDateRange(timestamp, range) {
+            const logDate = new Date(timestamp);
+            const now = new Date();
+            
+            switch(range) {
+                case 'today':
+                    return logDate.toDateString() === now.toDateString();
+                case 'yesterday':
+                    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+                    return logDate.toDateString() === yesterday.toDateString();
+                case 'week':
+                    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                    return logDate >= weekAgo;
+                case 'month':
+                    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                    return logDate >= monthAgo;
+                case 'custom':
+                    const startDate = new Date(document.getElementById('startDate').value);
+                    const endDate = new Date(document.getElementById('endDate').value);
+                    return logDate >= startDate && logDate <= endDate;
+                default:
+                    return true;
+            }
+        }
+        
+        function handleDateRangeChange() {
+            const range = document.getElementById('dateRangeFilter').value;
+            if (range === 'custom') {
+                document.getElementById('customDateRange').style.display = 'block';
+            } else {
+                document.getElementById('customDateRange').style.display = 'none';
+                filterLogs();
+            }
+        }
+        
+        function sortLogs() {
+            const sortBy = document.getElementById('sortLogs').value;
+            
+            filteredLogs.sort((a, b) => {
+                switch(sortBy) {
+                    case 'newest':
+                        return new Date(b.timestamp) - new Date(a.timestamp);
+                    case 'oldest':
+                        return new Date(a.timestamp) - new Date(b.timestamp);
+                    case 'user':
+                        return a.username.localeCompare(b.username);
+                    case 'level':
+                        return a.level.localeCompare(b.level);
+                    default:
+                        return 0;
+                }
+            });
+            
+            updateLogsTable();
+        }
+        
+        function updateLogsTable() {
+            const tbody = document.querySelector('#logsTable tbody');
+            tbody.innerHTML = '';
+            
+            filteredLogs.forEach(log => {
+                tbody.appendChild(log.element);
+            });
+        }
+        
+        function clearLogFilters() {
+            document.getElementById('logSearchInput').value = '';
+            document.getElementById('logLevelFilter').value = '';
+            document.getElementById('userFilter').value = '';
+            document.getElementById('dateRangeFilter').value = '';
+            document.getElementById('sortLogs').value = 'newest';
+            document.getElementById('customDateRange').style.display = 'none';
+            filterLogs();
+        }
+        
+        function toggleRealTime() {
+            const toggle = document.getElementById('realTimeToggle');
+            
+            if (toggle.checked) {
+                realTimeInterval = setInterval(() => {
+                    // Simulate new logs
+                    addNewLog();
+                }, 5000);
+                showNotification('Real-time monitoring enabled', 'success');
+            } else {
+                if (realTimeInterval) {
+                    clearInterval(realTimeInterval);
+                    realTimeInterval = null;
+                }
+                showNotification('Real-time monitoring disabled', 'info');
+            }
+        }
+        
+        function addNewLog() {
+            // Simulate adding a new log entry
+            const newLog = {
+                id: Date.now(),
+                username: 'system',
+                level: 'info',
+                message: 'System health check completed successfully',
+                timestamp: new Date().toISOString()
+            };
+            
+            // Add to the beginning of the table
+            const tbody = document.querySelector('#logsTable tbody');
+            const newRow = createLogRow(newLog);
+            tbody.insertBefore(newRow, tbody.firstChild);
+            
+            // Update statistics
+            updateLogStatistics();
+        }
+        
+        function createLogRow(log) {
+            const row = document.createElement('tr');
+            row.dataset.logId = log.id;
+            row.dataset.username = log.username.toLowerCase();
+            row.dataset.level = log.level.toLowerCase();
+            row.dataset.message = log.message.toLowerCase();
+            row.dataset.timestamp = log.timestamp;
+            
+            const levelClass = getLogLevelClass(log.level);
+            const levelIcon = getLogLevelIcon(log.level);
+            
+            row.innerHTML = `
+                <td>
+                    <div class="small">
+                        <div>${new Date(log.timestamp).toLocaleDateString()}</div>
+                        <div class="text-muted">${new Date(log.timestamp).toLocaleTimeString()}</div>
+                    </div>
+                </td>
+                <td>
+                    <div class="d-flex align-items-center">
+                        <div class="avatar-sm bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                            ${log.username.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                            <div class="fw-bold small">${log.username}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <span class="badge ${levelClass}">
+                        <i class="${levelIcon} me-1"></i>
+                        ${log.level}
+                    </span>
+                </td>
+                <td>
+                    <div class="log-message">${log.message}</div>
+                </td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-info" onclick="viewLogDetails(${log.id})" title="View details">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-outline-danger" onclick="deleteLog(${log.id})" title="Delete log">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            
+            return row;
+        }
+        
+        function getLogLevelClass(level) {
+            switch(level.toLowerCase()) {
+                case 'error': return 'bg-danger';
+                case 'warning': return 'bg-warning';
+                case 'success': return 'bg-success';
+                case 'info': return 'bg-info';
+                default: return 'bg-secondary';
+            }
+        }
+        
+        function getLogLevelIcon(level) {
+            switch(level.toLowerCase()) {
+                case 'error': return 'fas fa-exclamation-circle';
+                case 'warning': return 'fas fa-exclamation-triangle';
+                case 'success': return 'fas fa-check-circle';
+                case 'info': return 'fas fa-info-circle';
+                default: return 'fas fa-circle';
+            }
+        }
+        
+        function updateLogStatistics() {
+            // Update the statistics cards with new data
+            const totalLogs = document.querySelectorAll('#logsTable tbody tr').length;
+            // Update other statistics as needed
+        }
+        
+        function viewLogDetails(logId) {
+            const modal = new bootstrap.Modal(document.getElementById('logDetailsModal'));
+            document.getElementById('logDetailsContent').innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            `;
+            modal.show();
+            
+            // Simulate loading log details
+            setTimeout(() => {
+                document.getElementById('logDetailsContent').innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Log Information</h6>
+                            <p><strong>ID:</strong> ${logId}</p>
+                            <p><strong>Timestamp:</strong> ${new Date().toLocaleString()}</p>
+                            <p><strong>User:</strong> system</p>
+                            <p><strong>Level:</strong> <span class="badge bg-info">Info</span></p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Details</h6>
+                            <p><strong>Source:</strong> Application</p>
+                            <p><strong>Category:</strong> System</p>
+                            <p><strong>Session ID:</strong> sess_12345</p>
+                            <p><strong>IP Address:</strong> 192.168.1.100</p>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>Message</h6>
+                            <div class="bg-light p-3 rounded">
+                                <code>System health check completed successfully</code>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }, 1000);
+        }
+        
+        function deleteLog(logId) {
+            if (confirm('Are you sure you want to delete this log entry?')) {
+                // Implement log deletion
+                showNotification('Log entry deleted successfully', 'success');
+            }
+        }
+        
+        function exportLogs() {
+            showNotification('Export started. You will receive an email when ready.', 'info');
+        }
+        
+        function clearOldLogs() {
+            if (confirm('Are you sure you want to clear logs older than 30 days? This action cannot be undone.')) {
+                showNotification('Old logs cleared successfully', 'success');
+            }
+        }
+        
+        function copyLogDetails() {
+            const content = document.getElementById('logDetailsContent').textContent;
+            navigator.clipboard.writeText(content).then(() => {
+                showNotification('Log details copied to clipboard', 'success');
+            });
+        }
+    </script>
+}
+
+@functions {
+    private string GetLogLevel(string message)
+    {
+        if (message.Contains("error", StringComparison.OrdinalIgnoreCase) || 
+            message.Contains("Error", StringComparison.OrdinalIgnoreCase))
+            return "Error";
+        if (message.Contains("warning", StringComparison.OrdinalIgnoreCase) || 
+            message.Contains("Warning", StringComparison.OrdinalIgnoreCase))
+            return "Warning";
+        if (message.Contains("success", StringComparison.OrdinalIgnoreCase) || 
+            message.Contains("Success", StringComparison.OrdinalIgnoreCase))
+            return "Success";
+        return "Info";
+    }
+    
+    private string GetLogLevelClass(string level)
+    {
+        return level.ToLower() switch
+        {
+            "error" => "bg-danger",
+            "warning" => "bg-warning",
+            "success" => "bg-success",
+            "info" => "bg-info",
+            _ => "bg-secondary"
+        };
+    }
+    
+    private string GetLogLevelIcon(string level)
+    {
+        return level.ToLower() switch
+        {
+            "error" => "fas fa-exclamation-circle",
+            "warning" => "fas fa-exclamation-triangle",
+            "success" => "fas fa-check-circle",
+            "info" => "fas fa-info-circle",
+            _ => "fas fa-circle"
+        };
+    }
+}

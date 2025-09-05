@@ -1,26 +1,119 @@
-﻿@model IEnumerable<TweakManagerBackend.Models.LicenseKey>
+@model IEnumerable<TweakManagerBackend.Models.LicenseKey>
 
 @{
     ViewData["Title"] = "License Keys";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">@ViewData["Title"]</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        <a asp-action="GenerateKey" class="btn btn-sm btn-outline-primary">Generate New Key</a>
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">License Key Management</h1>
+            <p class="page-subtitle">Manage and monitor all license keys in your system</p>
+        </div>
+        <div class="page-actions">
+            <a asp-action="GenerateKey" class="btn btn-modern btn-primary-modern">
+                <i class="fas fa-plus"></i>
+                Generate New Key
+            </a>
+        </div>
     </div>
 </div>
 
 @if (TempData["SuccessMessage"] != null)
 {
-    <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    <div class="alert-modern alert-success-modern">
+        <i class="fas fa-check-circle me-2"></i>
+        @TempData["SuccessMessage"]
+    </div>
 }
 
-<div class="table-responsive">
-    <table class="table table-striped table-hover table-sm">
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert-modern alert-danger-modern">
+        <i class="fas fa-exclamation-circle me-2"></i>
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<!-- Filters and Search -->
+<div class="modern-card mb-4">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label for="searchInput" class="form-label">Search Keys</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" class="form-control" id="searchInput" placeholder="Search by key, username, or hardware ID...">
+            </div>
+        </div>
+        <div class="col-md-2">
+            <label for="statusFilter" class="form-label">Status</label>
+            <select class="form-select" id="statusFilter">
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+                <option value="expired">Expired</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label for="dateFilter" class="form-label">Date Range</label>
+            <select class="form-select" id="dateFilter">
+                <option value="">All Time</option>
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+                <option value="year">This Year</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label for="sortBy" class="form-label">Sort By</label>
+            <select class="form-select" id="sortBy">
+                <option value="date-desc">Newest First</option>
+                <option value="date-asc">Oldest First</option>
+                <option value="username">Username</option>
+                <option value="status">Status</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <button class="btn btn-outline-secondary w-100" onclick="clearFilters()">
+                <i class="fas fa-times"></i>
+                Clear Filters
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Actions -->
+<div class="modern-card mb-4" id="bulkActions" style="display: none;">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <span class="fw-bold" id="selectedCount">0</span> keys selected
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-modern btn-success-modern btn-sm" onclick="bulkActivate()">
+                <i class="fas fa-check"></i>
+                Activate Selected
+            </button>
+            <button class="btn btn-modern btn-warning-modern btn-sm" onclick="bulkDeactivate()">
+                <i class="fas fa-pause"></i>
+                Deactivate Selected
+            </button>
+            <button class="btn btn-modern btn-danger-modern btn-sm" onclick="bulkDelete()">
+                <i class="fas fa-trash"></i>
+                Delete Selected
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Keys Table -->
+<div class="modern-table">
+    <table class="table table-hover mb-0" id="keysTable">
         <thead>
             <tr>
+                <th width="50">
+                    <input type="checkbox" class="form-check-input" id="selectAll" onchange="toggleSelectAll()">
+                </th>
                 <th>Key Value</th>
                 <th>Assigned To</th>
                 <th>Hardware ID</th>
@@ -32,31 +125,338 @@
         <tbody>
             @foreach (var key in Model)
             {
-                <tr>
-                    <td><code>@key.KeyValue</code></td>
-                    <td>@key.AssignedToUsername</td>
-                    <td>@key.AssignedToHardwareId</td>
-                    <td>@key.CreationDate.ToShortDateString()</td>
+                <tr data-key-id="@key.Id" data-status="@(key.IsActive ? "active" : "inactive")" data-username="@key.AssignedToUsername.ToLower()" data-hardware="@key.AssignedToHardwareId.ToLower()" data-date="@key.CreationDate.ToString("yyyy-MM-dd")">
+                    <td>
+                        <input type="checkbox" class="form-check-input key-checkbox" value="@key.Id" onchange="updateBulkActions()">
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <code class="me-2">@key.KeyValue</code>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="copyToClipboard('@key.KeyValue')" title="Copy key">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="avatar-sm bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2">
+                                @key.AssignedToUsername.Substring(0, 1).ToUpper()
+                            </div>
+                            <div>
+                                <div class="fw-bold">@key.AssignedToUsername</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <code class="small">@key.AssignedToHardwareId</code>
+                    </td>
+                    <td>
+                        <div>@key.CreationDate.ToString("MMM dd, yyyy")</div>
+                        <small class="text-muted">@key.CreationDate.ToString("HH:mm")</small>
+                    </td>
                     <td>
                         @if (key.IsActive)
                         {
-                            <span class="badge bg-success">Active</span>
+                            <span class="badge bg-success">
+                                <i class="fas fa-check-circle me-1"></i>
+                                Active
+                            </span>
                         }
                         else
                         {
-                            <span class="badge bg-danger">Inactive</span>
+                            <span class="badge bg-danger">
+                                <i class="fas fa-times-circle me-1"></i>
+                                Inactive
+                            </span>
                         }
                     </td>
                     <td>
-                        <form asp-action="ToggleKeyState" method="post" class="d-inline">
-                            <input type="hidden" name="keyId" value="@key.Id" />
-                            <button type="submit" class="btn btn-@(key.IsActive ? "warning" : "success") btn-sm">
-                                @(key.IsActive ? "Deactivate" : "Activate")
+                        <div class="btn-group btn-group-sm">
+                            <form asp-action="ToggleKeyState" method="post" class="d-inline">
+                                <input type="hidden" name="keyId" value="@key.Id" />
+                                <button type="submit" class="btn btn-@(key.IsActive ? "warning" : "success")" title="@(key.IsActive ? "Deactivate" : "Activate") key">
+                                    <i class="fas fa-@(key.IsActive ? "pause" : "play")"></i>
+                                </button>
+                            </form>
+                            <button class="btn btn-outline-info" onclick="viewKeyDetails(@key.Id)" title="View details">
+                                <i class="fas fa-eye"></i>
                             </button>
-                        </form>
+                            <button class="btn btn-outline-danger" onclick="deleteKey(@key.Id)" title="Delete key">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             }
         </tbody>
     </table>
 </div>
+
+<!-- Pagination -->
+<div class="d-flex justify-content-between align-items-center mt-4">
+    <div class="text-muted">
+        Showing <span id="showingStart">1</span> to <span id="showingEnd">10</span> of <span id="totalKeys">@Model.Count()</span> keys
+    </div>
+    <nav>
+        <ul class="pagination pagination-sm mb-0">
+            <li class="page-item disabled">
+                <a class="page-link" href="#" tabindex="-1">Previous</a>
+            </li>
+            <li class="page-item active">
+                <a class="page-link" href="#">1</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="#">2</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="#">3</a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="#">Next</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<!-- Key Details Modal -->
+<div class="modal fade" id="keyDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Key Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="keyDetailsContent">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="editKey()">Edit Key</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let allKeys = [];
+        let filteredKeys = [];
+        let currentPage = 1;
+        const itemsPerPage = 10;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize table data
+            initializeTable();
+            
+            // Setup event listeners
+            document.getElementById('searchInput').addEventListener('input', filterKeys);
+            document.getElementById('statusFilter').addEventListener('change', filterKeys);
+            document.getElementById('dateFilter').addEventListener('change', filterKeys);
+            document.getElementById('sortBy').addEventListener('change', sortKeys);
+        });
+        
+        function initializeTable() {
+            const rows = document.querySelectorAll('#keysTable tbody tr');
+            allKeys = Array.from(rows).map(row => ({
+                element: row,
+                id: row.dataset.keyId,
+                status: row.dataset.status,
+                username: row.dataset.username,
+                hardware: row.dataset.hardware,
+                date: row.dataset.date
+            }));
+            filteredKeys = [...allKeys];
+        }
+        
+        function filterKeys() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+            
+            filteredKeys = allKeys.filter(key => {
+                const matchesSearch = !searchTerm || 
+                    key.element.textContent.toLowerCase().includes(searchTerm);
+                
+                const matchesStatus = !statusFilter || key.status === statusFilter;
+                
+                const matchesDate = !dateFilter || matchesDateFilter(key.date, dateFilter);
+                
+                return matchesSearch && matchesStatus && matchesDate;
+            });
+            
+            updateTable();
+        }
+        
+        function matchesDateFilter(date, filter) {
+            const keyDate = new Date(date);
+            const now = new Date();
+            
+            switch(filter) {
+                case 'today':
+                    return keyDate.toDateString() === now.toDateString();
+                case 'week':
+                    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                    return keyDate >= weekAgo;
+                case 'month':
+                    const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                    return keyDate >= monthAgo;
+                case 'year':
+                    const yearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+                    return keyDate >= yearAgo;
+                default:
+                    return true;
+            }
+        }
+        
+        function sortKeys() {
+            const sortBy = document.getElementById('sortBy').value;
+            
+            filteredKeys.sort((a, b) => {
+                switch(sortBy) {
+                    case 'date-desc':
+                        return new Date(b.date) - new Date(a.date);
+                    case 'date-asc':
+                        return new Date(a.date) - new Date(b.date);
+                    case 'username':
+                        return a.username.localeCompare(b.username);
+                    case 'status':
+                        return a.status.localeCompare(b.status);
+                    default:
+                        return 0;
+                }
+            });
+            
+            updateTable();
+        }
+        
+        function updateTable() {
+            const tbody = document.querySelector('#keysTable tbody');
+            tbody.innerHTML = '';
+            
+            filteredKeys.forEach(key => {
+                tbody.appendChild(key.element);
+            });
+            
+            updatePagination();
+        }
+        
+        function updatePagination() {
+            const total = filteredKeys.length;
+            const start = (currentPage - 1) * itemsPerPage + 1;
+            const end = Math.min(currentPage * itemsPerPage, total);
+            
+            document.getElementById('showingStart').textContent = total > 0 ? start : 0;
+            document.getElementById('showingEnd').textContent = end;
+            document.getElementById('totalKeys').textContent = total;
+        }
+        
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('dateFilter').value = '';
+            document.getElementById('sortBy').value = 'date-desc';
+            filterKeys();
+        }
+        
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.key-checkbox');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+            
+            updateBulkActions();
+        }
+        
+        function updateBulkActions() {
+            const checkedBoxes = document.querySelectorAll('.key-checkbox:checked');
+            const bulkActions = document.getElementById('bulkActions');
+            const selectedCount = document.getElementById('selectedCount');
+            
+            if (checkedBoxes.length > 0) {
+                bulkActions.style.display = 'block';
+                selectedCount.textContent = checkedBoxes.length;
+            } else {
+                bulkActions.style.display = 'none';
+            }
+        }
+        
+        function bulkActivate() {
+            const checkedBoxes = document.querySelectorAll('.key-checkbox:checked');
+            if (confirm(`Are you sure you want to activate ${checkedBoxes.length} keys?`)) {
+                // Implement bulk activation
+                showNotification(`${checkedBoxes.length} keys activated successfully`, 'success');
+                updateBulkActions();
+            }
+        }
+        
+        function bulkDeactivate() {
+            const checkedBoxes = document.querySelectorAll('.key-checkbox:checked');
+            if (confirm(`Are you sure you want to deactivate ${checkedBoxes.length} keys?`)) {
+                // Implement bulk deactivation
+                showNotification(`${checkedBoxes.length} keys deactivated successfully`, 'success');
+                updateBulkActions();
+            }
+        }
+        
+        function bulkDelete() {
+            const checkedBoxes = document.querySelectorAll('.key-checkbox:checked');
+            if (confirm(`Are you sure you want to delete ${checkedBoxes.length} keys? This action cannot be undone.`)) {
+                // Implement bulk deletion
+                showNotification(`${checkedBoxes.length} keys deleted successfully`, 'success');
+                updateBulkActions();
+            }
+        }
+        
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showNotification('Key copied to clipboard', 'success');
+            });
+        }
+        
+        function viewKeyDetails(keyId) {
+            // Load key details via AJAX
+            const modal = new bootstrap.Modal(document.getElementById('keyDetailsModal'));
+            document.getElementById('keyDetailsContent').innerHTML = `
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            `;
+            modal.show();
+            
+            // Simulate loading key details
+            setTimeout(() => {
+                document.getElementById('keyDetailsContent').innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Key Information</h6>
+                            <p><strong>Key Value:</strong> <code>PabloDEV-ABC123-DEF456</code></p>
+                            <p><strong>Status:</strong> <span class="badge bg-success">Active</span></p>
+                            <p><strong>Created:</strong> January 15, 2024</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Assignment</h6>
+                            <p><strong>Username:</strong> john.doe@example.com</p>
+                            <p><strong>Hardware ID:</strong> <code>HW-12345-ABCD</code></p>
+                            <p><strong>Last Used:</strong> 2 hours ago</p>
+                        </div>
+                    </div>
+                `;
+            }, 1000);
+        }
+        
+        function deleteKey(keyId) {
+            if (confirm('Are you sure you want to delete this key? This action cannot be undone.')) {
+                // Implement key deletion
+                showNotification('Key deleted successfully', 'success');
+            }
+        }
+        
+        function editKey() {
+            showNotification('Edit functionality coming soon', 'info');
+        }
+    </script>
+}

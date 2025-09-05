@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -150,6 +150,24 @@ namespace TweakManagerBackend.Controllers
             ViewData["ActivePage"] = "Logs";
             var allLogs = _context.LogEntries.OrderByDescending(l => l.Timestamp).ToList();
             return View(allLogs);
+        }
+
+        public IActionResult Settings()
+        {
+            ViewData["ActivePage"] = "Settings";
+            return View();
+        }
+
+        public IActionResult Analytics()
+        {
+            ViewData["ActivePage"] = "Analytics";
+            return View();
+        }
+
+        public IActionResult Notifications()
+        {
+            ViewData["ActivePage"] = "Notifications";
+            return View();
         }
     }
 }
